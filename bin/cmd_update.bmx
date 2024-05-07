@@ -12,6 +12,14 @@
 'Import "TRelease.bmx"
 
 Function cmd_update()
+	
+	Print( "Updating modservers." )	
+	For Local key:String = EachIn TModserver.keys()
+		Local modserver:TModserver = TModserver.forkey( key )
+	Next
+
+' OLD FROM HERE
+
 	Local J:JSON
 	
 	Print( "Updating modservers." )
@@ -21,7 +29,12 @@ Function cmd_update()
 	For Local key:String = EachIn J.keys()
 		DebugStop
 		Local J:JSON = SYS.DB.get( "modservers|"+key )
-		Local modserver:TModserver = New TModserver( J )
+		If Not J Or J.isInvalid()
+			fail( "Modserver '"+key+"' is corrupt" )
+			Continue
+		End If
+		Local modserver:TModserver = TModserver.Transpose( J )
+		'Local modserver:TModserver = New TModserver( J )
 	
 'TODO: This should only run when expired - 
 Print( "UPDATING MODSERVER IN DEBUG MODE - PLEASE FIX BEFORE RELEASE" )

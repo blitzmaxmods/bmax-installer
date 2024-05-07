@@ -1,3 +1,22 @@
+
+' DEFAULT MODSERVERS
+' This is a list of modservers that are available by default
+' 
+' Note: The bmax installer provides unofficial modserver support for the following repositories and packages:
+' * Blitzmax 
+' * Bruceys modules
+' * Scaremongers modules
+'
+
+Global DEFAULT_MODSERVERS:String = """
+[
+{
+	"name": "Default Modserver",
+	"repository": "github:blitzmaxmods/bmx-installer"
+}
+]
+"""
+
 ' DEFAULT DATABASE
 
 ' STATIC PACKAGE INFORMATION USED AS DEFAULT
@@ -14,6 +33,9 @@
 '	type		RELEASE or ZIP
 '	modserver	May be redundant
 '	actions		NOT YET IMPLEMENTED
+
+
+
 
 Global DEFAULT_PACKAGES:String = """
 [	
@@ -97,18 +119,7 @@ Global DEFAULT_REPOSITORIES:String = """
 ]
 """
 
-' DEFAULT MODSERVERS
-' Note: Blitzmax official modserver and Bruceys modules
-' are currently provided by a modserver in Scaremongers repository
 
-Global DEFAULT_MODSERVERS:String = """
-[
-{
-	"name": "Default Modserver",
-	"repository": "github:blitzmaxmods/bmx-installer"
-}
-]
-"""
 
 Global OLD_DEFAULT_MODSERVERS:String = """
 [

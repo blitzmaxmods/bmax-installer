@@ -1,5 +1,20 @@
+' Repository and Repository Manager
 
-'Import "TPackage.bmx"
+' Repository Management functions:
+
+'	Exists()		- Checks if a repository exists
+'	ForKey()		- Gets a repository for a given key
+'	Keys()			- Gets a list of keys (repository) in the database
+'	Load()			- Loads the database
+'	Save()			- Saves the database
+'	Transpose()		- Transforms JSON to repository
+
+' Modserver support methods
+
+'	New()			- Creates a new modserver
+'	expired()		- Checks if local modserver cache is valid
+'	setcache()		- Sets the modserver cache path
+'	update()		- Performs an update
 
 
 Include "TRepositoryGitHub.bmx"
@@ -11,55 +26,194 @@ Include "TRepositoryGitHub.bmx"
 
 Type TRepository
 
+	Global list:TMap
+
+	Field key:String			{noserialise}	' Database index
 	Field platform:String = "undefined"
-	Field name:String
-	Field modserver:String		' The modserver we learned this repository
+	'Field name:String
+	'Field modserver:String		' The modserver we learned this repository
 
 	'Field platform:TPlatform
 	Field project:String		' This is the path inside the platform
 	' This is from the defintion (if exists) and is only used
 	' when creating a repo. 
-	Field folder:String
+	'Field folder:String
 
+	'Function Exists:Int( repo_key:String )
+	'	Return SYS.DB.repo_exists( repo_key )
+	'End Function
+
+	' Add new Repository
+	Function Add:Int( repository:TRepository )
+		Print( "-> ADDING REPOSITORY: "+repository.key )
+
+		If Not list; Load()
+'DebugStop
+		' Check if repository exists
+		'repository.key = repository.platform + ":" + repository.project
+		If list.contains( repository.key )
+			Print( "Repository already exists" )
+			Return False
+		End If
+		'
+		'Local repository:TRepository = TRepository.get( key )
+		' Add to list
+		list.insert( repository.key, repository )
+		Return True
+		
+	End Function
+
+	' Create a repository
+	Function Create:TRepository( key:String )
+	
+		Local data:String[] = key.split(":")
+		If data.Length <> 2; die( "!! Invalid repository definition" )
+
+		Local platform:String = data[0].tolower()
+		Local repopath:String[] = Lower(data[1].Replace("\","/")).split("/")
+		If repopath.Length <>2; die( "!! Invalid repository definition" )
+		'If path.Length >2; folder = "/".join(path[2..])
+		Local path:String = repopath[0]+"/"+repopath[1]
+		
+		Local repo_key:String = platform+":"+path
+			
+		Local repository:TRepository
+		Select platform
+		Case "git","github";		repository = New TRepositoryGithub( path ) ', modserver )
+'		Case "sf","sourceforge";	repository = New TRepositorySourceForge( path )', modserver )
+'		Case "webapi";				repository = New TRepositoryWebApi( path )', modserver )
+		Default
+			die( "Unsupported platform: "+platform )
+		End Select
+		
+		repository.key = key
+		Return repository
+		
+	End Function
+
+	' Check if repository exists
+	Function Exists:Int( key:String )
+		If Not list; Load()
+		Return list.contains( key )
+	End Function
+
+	' Get a repository
+	Function ForKey:TRepository( key:String )
+		If Not list; Load()
+		Return TRepository( list.valueforkey( key ) )
+	End Function
+
+	' Get list of keys (repositories)
+	Function Keys:TMapEnumerator()
+		If Not list; Load()
+		Return list.keys()
+	End Function
+
+	' Load database
+	Function Load()
+		list = New TMap()
+		Local repositories:JSON = SYS.DB.get( "repositories" )
+		If Not repositories; Return
+		
+		Print( repositories.prettify() )
+		DebugStop
+		For Local key:String = EachIn repositories.keys()
+			DebugStop
+			Local J:JSON = repositories.search( key )
+			Print( J.prettify() )
+			Local repository:TRepository = TRepository.Transpose( J )
+			repository.key = key
+			list.insert( key, repository )
+		Next
+		DebugStop
+	End Function
+
+	' Save database
+	Function Save()
+		Print( "SAVING REPOSITORIES" )
+
+		If Not list; Return
+		Local J:JSON = New JSON()
+		For Local key:String = EachIn list.keys()
+			Local repository:TRepository = TRepository( list.valueforkey( key ) )
+			J.set( key, repository.serialise() )
+		Next
+		SYS.DB.set( "repositories", J )
+	End Function
+	
+	' Transform a JRepository to a repository
 	Function Transpose:TRepository( J:JSON )
-		Return TRepository( J.Transpose( "TRepository" ) )
+		Local repository:TRepository = TRepository( J.Transpose( "TRepository" ) )
+		If repository; repository.key = repository.platform + ":" + repository.project
+		Return repository
 	End Function
 	
 	' Finds an existing repository
-	Function find:TRepository( definition:String )
-	End Function
+	'Function find:TRepository( definition:String )
+	'End Function
 
 	'Method New()
 	'	DebugStop
 	'End Method
 	
 	' Returns a repostitory definition string
-	Method definition:String()
-		Return platform+":"+project	'+"/"+folder
-	End Method
+	' Please use key
+'	Method definition:String()
+'Print( "Repository.defintion() is depreciated")
+'		Return platform+":"+project	'+"/"+folder
+'	End Method
 	
-	' Build a repository from database
-	Function get:TRepository( definition:String )
-		Local data:String[] = definition.split(":")
+	' Build a repository from database or create one
+	Function get:TRepository( key:String )
+		Local data:String[] = key.split(":")
 		If data.Length <> 2; die( "!! Invalid repository definition" )
 
 		Local platform:String = data[0].tolower()
-		'Local path:String     = data[1]
+		Local repopath:String[] = Lower(data[1].Replace("\","/")).split("/")
+		If repopath.Length <>2; die( "!! Invalid repository definition" )
+		'If path.Length >2; folder = "/".join(path[2..])
+		Local path:String = repopath[0]+"/"+repopath[1]
 		
-		Local J:JSON = SYS.DB.get( "repositories|"+definition )
-		If Not J Or J.isInvalid(); Return Null
+		Local repo_key:String = platform+":"+path
+		
+		If Exists( repo_key )
+			Return forKey( repo_key )
+			Rem
+		
+			Local J:JSON = SYS.DB.get( "repositories|"+repo_key )
+			If Not J Or J.isInvalid(); Return Null
 
-		Select platform
-		Case "git","github";		Return TRepositoryGithub.Transpose( J )
-'		Case "sf","sourceforge";	Return TRepositorySourceForge.Transpose( J )
-'		Case "webapi";				Return TRepositoryWebApi.Transpose( J )
-		Default
-			die( "Unsupported platform: "+platform )
-		End Select
+			Select platform
+			Case "git","github";		Return TRepositoryGithub.Transpose( J )
+	'		Case "sf","sourceforge";	Return TRepositorySourceForge.Transpose( J )
+	'		Case "webapi";				Return TRepositoryWebApi.Transpose( J )
+			Default
+				die( "Unsupported platform: "+platform )
+			End Select
+			EndRem
+		Else
+			Local repository:TRepository
+			Select platform
+			Case "git","github";		repository = New TRepositoryGithub( path ) ', modserver )
+	'		Case "sf","sourceforge";	repository = New TRepositorySourceForge( path )', modserver )
+	'		Case "webapi";				repository = New TRepositoryWebApi( path )', modserver )
+			Default
+				die( "Unsupported platform: "+platform )
+			End Select
+			'DebugStop
+			repository.key = repo_key
+			
+			' Save new repository
+			'SYS.DB.set( "repositories|"+repo_key, repository.serialise() )
+			'Print( SYS.DB.get( "repositories|"+repo_key ).prettify() )
+			'DebugStop
+			Return repository
+		End If
 	
 	End Function
-	
+
 	' Creates a repository from a definition
+Rem DEPRECIATED, Please use get()
 	Function fromDefinition:TRepository( definition:String, modserver:String="" )
 		Local data:String[] = definition.split(":")
 		If data.Length <> 2; die( "!! Invalid repository definition" )
@@ -76,11 +230,14 @@ Type TRepository
 		End Select
 
 	End Function
+EndRem
+
+
 
 	' Identify if this is an official repository
-	Method isOfficial:Int()
-		Return isOfficial( modserver )
-	End Method
+	'Method isOfficial:Int()
+	'	Return isOfficial( modserver )
+	'End Method
 
 	' Identify if this is an official repository
 	' (May be platform specific)
@@ -93,9 +250,9 @@ Type TRepository
 	Public
 	
 	' Returns the folder from a repository definition
-	Method getFolder:String()
-		Return folder
-	End Method
+	'Method getFolder:String()
+	'	Return folder
+	'End Method
 	
 	' Download a file as a string
 	Method API_download_String:TResponse( url:String, headers:String[] = [], verbose:Int=0 )
@@ -122,9 +279,17 @@ Type TRepository
 
 	' Get the relative cache file path for this repository
 	Method cachefolder:String()
-		Local path:String = platform+"/"+project+"/"
-		If folder; path :+ folder+"/"
-		Return path
+		Return platform+"/"+project+"/"
+	End Method
+
+	' Return the key for this repository
+	'Method key:String()
+	'	Return platform+":"+project
+	'End Method
+
+	' Serialise self into JSON
+	Method serialise:JSON()
+		Return JSON.serialise( Self )
 	End Method
 
 	' Download a string from the repository (Platform Specific)
@@ -134,7 +299,7 @@ Type TRepository
 	Method getLastCommit:String( filepath:String ) Abstract
 	
 	' Retrieves the URL for a modserver (Platform specific)
-	Method getModserverURL:String( folder:String="" ) Abstract
+	Method getModserverURL:String() Abstract
 
 	' Get API headers (Platform specific)
 	Method getHeaders:String[]() Abstract

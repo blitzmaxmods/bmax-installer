@@ -34,7 +34,7 @@ Type TDatabase
 		End If
 	
 		' Add default modserver(s)
-		update_default_modservers()
+		'update_default_modservers()
 		
 		'add_default_packages()
 		'add_default_repositories()
@@ -55,32 +55,45 @@ Type TDatabase
 	End Method
 	
 	' Confirm if a modserver currently exists
-	Method modserver_exists:Int( repodef:String )
+Rem
+	Method modserver_exists:Int( repo_key:String )
+Print( "## DATABASE / modserver_exists() is depreciated" )
+DebugStop
 		'DebugStop
 		'Local path:String = platform+"|modservers|"+repo
-		Local record:JSON = db.search( "modservers|"+repodef )
+		Local record:JSON = db.search( "modservers|"+repo_key )
 		If record And record.isValid(); Return True
 		Return False
 	End Method
 
 	' Confirm if a repository currently exists
-	Method repo_exists:Int( repodef:String )
-		Local record:JSON = db.search( "repositories|"+repodef )
+	Method repo_exists:Int( repo_key:String )
+Print( "## DATABASE / repo_exists() is depreciated" )
+DebugStop
+		Local record:JSON = db.search( "repositories|"+repo_key )
 		If record And record.isValid(); Return True
 		Return False
 	End Method
 
 	' Confirm if a package currently exists
 	Method package_exists:Int( name:String )
+Print( "## DATABASE / package_exists() is depreciated" )
+DebugStop
 		Local record:JSON = db.search( "packages|"+name )
 		If record And record.isValid(); Return True
 		Return False
 	End Method
-			
+EndRem			
 	' Update the database with default repositories
+Rem
 	Method update_default_modservers()
+Print( "## DATABASE / updte_default_modservers() is depreciated" )
+DebugStop
+Return
+
+
 		'Local updated:Int = False
-		'DebugStop
+DebugStop
 		' Read default modservers
 		Local J:JSON = JSON.parse( DEFAULT_MODSERVERS )
 		If Not J; die( "Failed to parse DEFAULT MODSERVERS" )
@@ -90,12 +103,12 @@ Type TDatabase
 		Local jmodservers:JSON[] = J.toArray()
 		For Local jmodserver:JSON = EachIn jmodservers
 			' Get details from package
-			Local repodef:String    = jmodserver.find("repository").ToString()
+			Local repo_key:String    = jmodserver.find("repository").ToString()
 			'Local description:String = jmodserver.find("description").ToString()
 			'Local project:String     = jmodserver.find("project").ToString()
 			'Local folder:String      = jmodserver.find("folder").ToString()
 			Local name:String         = jmodserver.find("name").ToString()
-			Local path:String = "modservers|"+repodef
+			Local path:String = "modservers|"+repo_key
 			' Check if record exists
 			Local record:JSON = db.search( path )
 			If Not( record And record.isValid() )
@@ -107,12 +120,12 @@ Type TDatabase
 			End If
 			
 			' Add new repository record
-			path = "repositories|"+repodef
+			path = "repositories|"+repo_key
 			record = db.search( path )
 
 			If record And record.isValid(); Continue
 			' Add new repository record
-			add_repository( repodef, "", "" )
+			add_repository( repo_key, "", "" )
 			changed = True
 			
 		Next
@@ -123,7 +136,7 @@ Type TDatabase
 		'	save( True )
 		'End If
 	End Method
-	
+EndRem	
 	' Add default modservers to database
 Rem
 	Method add_default_modservers()
@@ -290,9 +303,11 @@ EndRem
 		changed = True
 		'If autosave; save( True )
 	End Method	
-		
+Rem		
 	' Add modserver to database
-	Method add_modserver:Int( name:String, repodef:String )
+	Method add_modserver:Int( name:String, repo_key:String )
+Print( "## DATABASE / add_modserver() is depreciated" )
+DebugStop
 
 		'project = Lower(project).Replace( "\", "/")
 
@@ -305,32 +320,34 @@ EndRem
 		
 		' Check if modserver already exists
 		'Print db.prettify()
-		Local record:JSON = db.search( "modservers|"+repodef )
+		Local record:JSON = db.search( "modservers|"+repo_key )
 
 		' Does record exist?
 		If record And record.isValid()
-			Print( "! WARNING: Modserver '"+repodef+"' already exists." )
+			Print( "! WARNING: Modserver '"+repo_key+"' already exists." )
 			Return False
 		End If
 		
 		' New modserver record
 		Local jRecord:JSON = New JSON()
 		jRecord.set( "name", name )
-		jRecord.set( "repository", repodef )
+		jRecord.set( "repository", repo_key )
 		'jRecord.set( "project", project )
-		db.set( "modservers|"+repodef, jRecord )
+		db.set( "modservers|"+repo_key, jRecord )
 
 		' Add an unofficial repository for this modserver
-		add_repository( repodef, "", repodef )
+		add_repository( repo_key, "", repo_key )
 
 		changed = True
 		'DebugStop
 		Return True
 	End Method
-
+EndRem
 	' Add package to database
+Rem 
 	Method add_package:Int( package:TPackage )
-	
+Print( "## DATABASE / add_package() is depreciated" )
+DebugStop	
 		'Local packages:JSON = db.search( "packages" )
 		'If Not packages
 		'	packages = New JSON()
@@ -365,11 +382,13 @@ EndRem
 		changed = True
 		Return True
 	End Method
-
+EndRem
 	' Add repository to database
-	Method add_repository:Int( repodef:String, name:String="", modserver:String="" )
-
-		If name = ""; name = repodef
+Rem
+	Method add_repository:Int( repo_key:String, name:String="", modserver:String="" )
+Print( "## DATABASE / add_repository() is depreciated" )
+DebugStop	
+		If name = ""; name = repo_key
 
 		'Local list:JSON = db.search( "repositories" )
 		'DebugStop
@@ -380,11 +399,11 @@ EndRem
 		
 		' Check if modserver already exists
 		'Print db.prettify()
-		Local record:JSON = db.search( "repositories|"+repodef )
+		Local record:JSON = db.search( "repositories|"+repo_key )
 
 		' Does record exist?
 		If record And record.isValid()
-			'Print( "! WARNING: Repository '"+repodef+"' already exists." )
+			'Print( "! WARNING: Repository '"+repo_key+"' already exists." )
 			Return False
 		End If
 		
@@ -392,18 +411,21 @@ EndRem
 		Local jRecord:JSON = New JSON()
 		'jRecord.set( "name", name )
 		'jRecord.set( "platform", platform )
-		'jRecord.set( "definition", repodef )
-		jRecord.set( "modserver", repodef )	' Where we learnt about this repo
+		'jRecord.set( "definition", repo_key )
+		jRecord.set( "modserver", repo_key )	' Where we learnt about this repo
 		
-		db.set( "repositories|"+repodef, jRecord )
+		db.set( "repositories|"+repo_key, jRecord )
 
 		changed = True
 		'DebugStop
 		Return True
 	End Method
-		
+EndRem		
 	'
+Rem
 	Method Update()
+Print( "## DATABASE / Update() is depreciated" )
+DebugStop	
 		'If updated; Return	' Already updated
 		
 		' Get array of Repositories
@@ -432,8 +454,12 @@ EndRem
 		Next
 		
 	End Method
+EndRem
 
+Rem
 	Method filecache_add( filename:String, package:String )
+Print( "## DATABASE / filecache_add() is depreciated" )
+DebugStop
 		Local filecache:JSON = db.find( "filecache" )
 		Local file:JSON = New JSON()
 		file["name"]    = filename
@@ -444,6 +470,8 @@ EndRem
 	End Method
 	
 	Method filecache_remove( filename:String, package:String )
+Print( "## DATABASE / filecache_remove() is depreciated" )
+DebugStop
 		Local filecache:JSON = db.find( "filecache" )
 
 		DebugStop
@@ -451,6 +479,8 @@ EndRem
 	End Method
 	
 	Method filecache_get:TList( package:String )
+Print( "## DATABASE / filecache_get() is depreciated" )
+DebugStop
 		Local filecache:JSON = db.find( "filecache" )
 		
 		' Loop through each cache entry
@@ -464,5 +494,5 @@ EndRem
 		Return files
 		
 	End Method
-	
+EndRem
 End Type

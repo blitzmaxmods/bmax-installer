@@ -26,17 +26,17 @@ Type TRepositoryGitHub Extends TRepository
 '		DebugStop
 	End Method
 
-	Method New( path:String, modserver:String )
+	Method New( path:String )	', modserver:String )
 		Self.platform = "github"
-		Self.modserver = modserver
+		'Self.modserver = modserver
 		'DebugStop
 		'Local this:TRepositoryGitHub = Self
 		Local data:String[] = (path.Replace("\","/")).split("/")
 		If data.Length < 2; die( "Invalid repository" )
-		project = "/".join( data )
-		name = project	' Use project as a name by default
-		Local folder:String = ""
-		If data.Length > 2; folder = "/"+ ( "/".join( data[2..] ) )
+		project = "/".join( data[..2] )
+		'name = project	' Use project as a name by default
+		'Local folder:String = ""
+		'If data.Length > 2; folder = "/"+ ( "/".join( data[2..] ) )
 	End Method
 
 	' Download a TResponse from a repository
@@ -110,13 +110,8 @@ EndRem
 	End Method
 	
 	' Get URL to modserver.json
-	Method getModserverURL:String( folder:String="" )
-		If folder 
-			' Clean up the folder path
-			If Not folder.startswith("/"); folder = "/"+folder
-			If folder.endswith( "/" ); folder=folder[..folder.Length-1]
-		End If
-		Return GITHUB_API + project+"/contents"+folder+"/modserver.json"
+	Method getModserverURL:String()
+		Return GITHUB_API + project+"/contents/modserver.json"
 	End Method
 
 	' Get API headers

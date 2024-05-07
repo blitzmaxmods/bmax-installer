@@ -27,7 +27,7 @@ Function cmd_repository_add( args:String[] )
 	If args.Length < 1 die( "No repository specified" )
 	'
 	DebugStop
-	Local repo:TRepository = TRepository.fromDefinition( args[0] )
+	Local repo:TRepository = TRepository.get( args[0] )
 End Function
 
 Function cmd_repository_list( args:String[] )

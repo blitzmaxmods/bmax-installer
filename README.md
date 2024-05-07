@@ -3,6 +3,63 @@
 *EXPERIMENTAL*
 
 CURRENT STATE:  BROKEN
+
+# Command Line
+
+NOTE: This should be based on something like "apt"
+
+```
+bmax version                        IMPLEMENTED     Application version
+
+bmax add modserver <modserver>      IMPLEMENTED     Manually add a new modserver
+
+bmax remove modserver <modserver>   TBC             Manually remove a modserver
+bmax remove package <package>       TBC             Manually remove a package
+
+bmax install <package> [options]    TBC             Installs Blitzmax, a package or module
+
+    Package:
+        blitzmax                    TBC             Install the current official BlitzMax release 
+        <module>                    TBC             Install specified module (See list)
+    Options:
+        -latest                     TBC             Install blitzmax release plus latest modules
+        -in                         TBC             Override default installation directory
+
+bmax purge                          TBC             Clean up install directory
+
+bmax list <options>                 TBC             List modules and/ packages
+
+    Options:
+        -installed | -i             TBC             Lists modules installed
+        -available | -a             TBC             Lists modules available for install
+        -modules   | -m
+        -packages  | -p
+
+bmax show modules                   IMPLEMENTED     Show list of modules
+bmax show packages                  IMPLEMENTED     Show list of packages
+
+bmax show <package>                 TBC             Show details of a package
+
+    Package:
+        blitzmax                    TBC             Show details of package Blitzmax 
+        <module>                    TBC             Show details of a module
+
+bmax --debug        Produce a CSV containing all module data
+
+bmax upgrade <options>              TBC             Upgrade local installation
+
+bmax update                         IN PROGRESS     Update local database
+
+bmax update <package|module> <options>
+
+bmax uninstall <package|module> <options>
+bmax remove <package|module> <options>
+
+```
+
+# DEV NOTES
+
+
 	' A PACKAGE IS IN A REPO
 	' modserver.json is a file in a REPO and is therefore similar to a package!
 	' A MODSERVER is a repo containing a modserver.json
@@ -40,51 +97,7 @@ DEV NOTE:
 * Github Modservers are named USERNAME
 * Github Repositories are named USERNAME:REPOSITORY
 
-
-# Command Line
-
-NOTE: This should be based on something like "apt"
-
-```
-    bmax version                        IMPLEMENTED     Application version
-    bmax install <package> [options]    IMPLEMENTED     Installs Blitzmax, a package or module
-
-        Package:
-            blitzmax                    IMPLEMENTED     Install the current official BlitzMax release 
-            <module>                    EXPERIMENTAL    Install specified module (See list)
-        Options:
-            -latest                     TBC             Install blitzmax release plus latest modules
-            -in                         TBC             Override default installation directory
-
-    bmax purge                          TBC             Clean up install directory
-
-    NOT IMPLEMENTED
-    bmax list <options>                 TBC             List modules and/ packages
-
-        Options:
-            -installed | -i             TBC             Lists modules installed
-            -available | -a             TBC             Lists modules available for install
-            -modules   | -m
-            -packages  | -p
-
-    bmax show <package>                 TBC             Show details of a package
-
-        Package:
-            blitzmax                    TBC             Show details of package Blitzmax 
-            <module>                    TBC             Show details of a module
-
-    bmax --debug        Produce a CSV containing all module data
-
-    bmax upgrade <options>
-
-    bmax update <package|module> <options>
-
-    bmax uninstall <package|module> <options>
-    bmax remove <package|module> <options>
-
-```
-
-#Installation
+# Installation
 
 *To compile the installer, you will need the following third party components:
 
@@ -99,7 +112,14 @@ ON LINUX:
 	FROM: mods/bah.mod/libcurl.mod/certificates/cacert.pem
 	TO: ~/BlitzMax/cfg/
 
-ADD MODSERVER SUPPORT TO YOUR MODULES
+# Default modserver
+A default modserver has been included which will provide unofficial package links.
+
+* github:blitzmaxmods/bmx-installer
+
+If this application proves to be useful, then maybe one-day package authors will have their own modservers.
+
+# Add a modserver to your repository
 
 1. On Github; identify the username or origanisation you will use as your modserver.
 
@@ -109,24 +129,19 @@ ADD MODSERVER SUPPORT TO YOUR MODULES
 
 	You can either use an existing repository or create one called "modserver"
 
-    To use the default modserver repository for an author use:
-
-        bmax add modserver blitzmaxmods github:blitzmaxmods
-
-    NOTE: The above will add a repository called blitzmaxmods:modserver to your config
-
-    To use a specific repository specify the name of the repository:
-
-        bmax add modserver github:blitzmaxmods:example.mod
-
-    NOTE: The above will add a repository called blitzmaxmods:example.mod to your config
-
-
-3. Add a file called "modserver.json" to your modserver root.
+ 3. Add a file called "modserver.json" to your modserver root.
 
     See below for details regarding this file
 
-4. Add your modserver to the installer
+4. Test your modserver
+
+    Add the modserver to your local database using the username and repository like this:
+
+```
+       bmax add modserver github:{organistion}/{repository}
+```
+
+5. Add your modserver to the installer
 
 	a: Request via discord or make a pull request to add your modserver to the installer
 
@@ -136,13 +151,15 @@ ADD MODSERVER SUPPORT TO YOUR MODULES
 	
 		If you are using the repository 'modserver' you do not need to include it:
 
-		bmax --add GITHUB:username[/repository]
+		bmax add modserver github:username/repository
 		
 		For example:
-		bmax --add GITHUB:blitzmax-itspeedway-net
-		bmax --add GITHUB:myBlitzMaxMods/mbm.master
+		bmax add modserver github:blitzmax-itspeedway-net/modserver
+		bmax add modserver github:myBlitzMaxMods/mbm.master
 
 5. Add an installer.json file to your module root to help with version control and dependencies.
+
+## NOTE: THIS IS NOT YET IMPLEMENTED ##
 
 NEED COMMUNITY INPUT BUT THIS MIGHT CHANGE
 
@@ -168,8 +185,6 @@ The location of the config file depends on your system:
 | Linux | /home/<username>/.blitzmax/config/bmax.cfg |
 | MacOS | /Users/username/Library/Application Support/.blitzmax/config/bmax.cfg |
 | Windows | C:\Documents and Settings\username\Application Data\.blitzmax\config\bmax.cfg |
-
-
 
 
 # modserver.json
@@ -220,7 +235,8 @@ This feature was added to bmax before support for the installer is generally imp
 	"dependencies": [
 		{ "module": "bcc", "version": "", "date": "2023-03-11" },
 	]
-}```
+}
+```
 
 # NOTES
 
@@ -298,6 +314,11 @@ bmx.observer	blitzmax-itspeedway-net	observer.mod	. to /mod/bmx/observer.mod
 bmx.json		blitzmax-itspeedway-net	json.mod		. to /mod/bmx/json.mod
 
 Need to document other users modules; i'm sure there are a lot of them
+
+mima.miniaudio  github:MidimasterSoft/BlitzMax-Miniaudio-Wrapper
+- Not currently defined in a modserver
+- No offical installer
+
 
 THINGS TO DO
 * Downloaded files need to go in an installer or setup folder (not in downloads)

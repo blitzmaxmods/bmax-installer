@@ -28,16 +28,36 @@ Function cmd_modserver_add( args:String[] )
 	If args.Length < 1 die( "No modserver specified" )
 	'
 	DebugStop
-	Local repodef:String = args[0].Replace("\","/")
+	Local repo_key:String = args[0].Replace("\","/")
+	
+	If TModserver.exists( repo_key ); die( "Modserver already exists" )
+	
+'DebugStop
+	Local modserver:TModserver = TModserver.Create( repo_key )
+	If Not modserver; Return
+	
+'DebugStop 
+
+	' Validate modserver before adding
+	If Not modserver.fetch(); die( "Invalid modserver" )
+
+DebugStop
+	' Update the newly added modserver
+	TModserver.add( modserver )
+	modserver.Update()
+Print( "## cmd_modserver_add() needs to be tidied up!!!" )
+	Return
+			
+
 
 	' Support default modserver
 	' This would be github specific, so not currently supported
-	'If repodef.split("/").Length = 1; repodef :+ "/modserver"
+	'If repo_key.split("/").Length = 1; repo_key :+ "/modserver"
 	
 	' Get repository
 	' (This will be an unofficial repository because it is added from CLI)
-	Local repository:TRepository = TRepository.fromDefinition( repodef )
-	Local folder:String = repository.getFolder()
+	Local repository:TRepository = TRepository.get( repo_key )
+	'Local folder:String = repository.getFolder()
 		
 	'Local data:String[] = args[0].split(":")
 	'If data.Length <> 2; die( "Invalid modserver definition" )
@@ -67,26 +87,27 @@ End Rem
 	' Get a repo definition
 	'DebugStop
 	'Local argdata:SArgData = platform.splitRepoPath( path )
-	
+Rem	
 	' Confirm if modserver already exists
 	' NOTE THAT FOLDER IS USED IN MODSERVER DEFINTIONS
-	Local modserver_repodef:String = repository.definition()+folder
-	If SYS.DB.modserver_exists( modserver_repodef ); die( "Modserver already exists" )
+	Local modserver_repo_key:String = repository.definition()
+	If SYS.DB.modserver_exists( modserver_repo_key ); die( "Modserver already exists" )
 
 	' Create a modserver record
 	Local modserver:TModserver = New TModserver( repository )
 
 	' Download the modserver file	
-	If Not modserver.get(); die( "Failed to download modserver" )
+	If Not modserver.fetch(); die( "Failed to download modserver" )
 
 	' We have a valid modserver, save it
-	'SYS.DB.add_modserver( modservername, modserver_repodef )
-	SYS.DB.add_modserver( modserver.name, modserver_repodef )
+	'SYS.DB.add_modserver( modservername, modserver_repo_key )
+	SYS.DB.add_modserver( modserver.name, modserver_repo_key )
 	Print( "- Added modserver: "+ modserver.name )
 	
 	' Perform an update for this modserver
 	modserver.Update()
 	
+EndRem
 Rem	
 	'	GET PACKAGES DEFINED IN MODSERVER
 	Local packages:JSON = jmodserver.search("packages")
@@ -102,7 +123,7 @@ Rem
 		'DebugStop
 		Local package:TPackage = TPackage.Transpose( J )
 		' Set the package source to the repository we retrieved it
-		package.modserver = modserver_repodef
+		package.modserver = modserver_repo_key
 		If package
 			package.name = key
 
@@ -134,7 +155,7 @@ Rem
 				' Package repository is not saved, so add it
 				'DebugStop
 				'Local repo:TRepository = TRepository.fromDefintion( package.repository )
-				If SYS.DB.add_repository( package.repository, "", repodef )
+				If SYS.DB.add_repository( package.repository, "", repo_key )
 					Print "- Added repository: "+ package.repository
 				End If
 			End If
