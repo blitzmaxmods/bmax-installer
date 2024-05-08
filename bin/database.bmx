@@ -16,7 +16,7 @@ Type TDatabase
 		If FileType( filename ) = FILETYPE_FILE
 			dbtext = LoadString( filename )
 			If Not dbtext 
-				Print( "- Database initialised" )
+				Print( "- Empty database initialised" )
 				db = New JSON()
 				changed = True
 			Else

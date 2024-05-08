@@ -23,7 +23,7 @@ Type TModserver
 
 	Global list:TMap
 
-	Field key:String				' Database index
+	Field key:String				{noserialise}	' Database index
 	Field repo_key:String			{serializedname="repository"}
 	Field repository:TRepository	{notranspose noserialise}
 	Field name:String				' Name of this modserver
@@ -33,20 +33,12 @@ Type TModserver
 
 	' Add a modserver
 	Function Add:Int( modserver:TModserver )
-		Print( "-> ADDING MODSERVER: "+modserver.repo_key )
 		If Not list; Load()
-
 		' Check if modserver exists
-		If list.contains( modserver.repo_key )
-			Print( "Modserver already exists" )
-			Return False
-		End If
-
+		If list.contains( modserver.repo_key ); Return False
 		' Add to database
-		'TRepository.add( modserver.repository )
 		list.insert( modserver.repo_key, modserver )
 		Return True
-
 	End Function
 	
 Rem
@@ -112,31 +104,31 @@ End Rem
 		
 		DebugStop
 		' Pre-load repositories because modservers reference them
-		TRepository.Load()
+'		TRepository.Load()
 		
 		' Load modservers from database
-		list = New TMap()
+		If Not list; list = New TMap()
 		Local modservers:JSON = SYS.DB.get( "modservers" )
 		If modservers
 			For Local key:String = EachIn modservers.keys()
 				
 				' Check that the repository for this modserver exists
-				If Not TRepository.exists( key )
-					Local repository:TRepository = TRepository.Create( key )
-					TRepository.add( repository )
-				End If
+'				If Not TRepository.exists( key )
+'					Local repository:TRepository = TRepository.Create( key )
+'					TRepository.add( repository )
+'				End If
 				
 				'Local repository:TRepository.get( key )
 				'TRepository.add()
 				
-				Local J:JSON = modservers.find( key )
-				DebugStop
+				Local J:JSON = modservers.search( key )
+				If Not J Or J.isInvalid(); Continue
+				
 				modserver = TModserver.Transpose( J )
 				' At this point, you have a modserver, but if the 
 				' repositories are not loaded they will be incomplete.
 				list.insert( key, modserver )
-				DebugStop
-				
+				'DebugStop
 			Next
 		End If
 		
@@ -151,24 +143,25 @@ End Rem
 		For Local JModserver:JSON = EachIn JModservers
 			
 			' Confirm Repository exists
-			Print( Jmodserver.prettify() )
+			'Print( Jmodserver.prettify() )
 			
 			modserver = TModserver.Transpose( JModserver )
 			
-			DebugStop
+			'DebugStop
 			' Get details from package
 			'Local repo_key:String  = JModserver.find("repository").ToString()
 			
 			' Add a repository if one does not already exist
-			If Not TRepository.exists( modserver.repo_key )
-				DebugStop
+			'If Not TRepository.exists( modserver.repo_key )
+				'DebugStop
 				'Local repository:TRepository = TRepository.get( repo_key )
-				TRepository.add( modserver.repository )
-			End If
+			'	TRepository.add( modserver.repository )
+			'End If
 
 			' Confirm Modserver exists
 			
 			If Not TModserver.exists( modserver.repo_key )
+				Print( "- Adding modserver: "+modserver.name )
 				TModserver.add( modserver )
 			End If
 Rem
@@ -202,7 +195,7 @@ End Rem
 
 	' Save database
 	Function Save()
-		If Not list; Return
+		If Not list Or list.isempty(); Return
 		Local J:JSON = New JSON()
 		For Local key:String = EachIn list.keys()
 			Local modserver:TModserver = TModserver( list.valueforkey( key ) )
@@ -258,7 +251,7 @@ End Rem
 
 	' Retrieve the modserver.json file from remote repository
 	Method fetch:Int()
-		DebugStop
+		'DebugStop
 		' Get modserver from the repository
 		Print( "- Connecting to "+ repository.project )
 		Local uri:String = repository.getModserverURL()
@@ -329,7 +322,7 @@ Rem
 EndRem
 	' Convert modserver to JSON
 	Method serialise:JSON()
-		Print( "SAVING MODSERVERS" )
+
 	'DebugStop
 		Return JSON.serialise( Self )
 	End Method
@@ -366,8 +359,10 @@ EndRem
 
 			' Create a TPackage from JPackage
 			Local package:TPackage = TPackage.Transpose( JPackage )
-			If Not package; Continue
-			
+			If Not package
+				Print( "- Modserver contains invalid package: "+key )
+				Continue
+			EndIf
 			' Set the package source to the repository we retrieved it from		
 			package.key = key
 			package.modserver_key = repository.key
@@ -410,8 +405,11 @@ EndRem
 			' Check if package's repository exists
 			Local repository:TRepository = TRepository.Create( package.repo_key )
 			If Not TRepository.exists( package.repo_key ); TRepository.Add( repository )
-
-			package.official = repository.isofficial( package.repo_key )
+			
+			DebugStop
+			' A Package is official if it's repository is the same organisation
+			' as the modserver that provided it.
+			package.official = repository.isofficial( Self.repo_key )
 			
 Rem
 

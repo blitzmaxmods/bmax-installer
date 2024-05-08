@@ -146,13 +146,14 @@ Type SYS
 
 	' Exit procedure to save database
 	Function ExitProcedure()
+		Print "! System Exit Procedure"
 		' Save data
 		TModserver.Save()
 		TPackage.Save()
 		TRepository.Save()
 		'
-		Print "- System Exit Procedure / Saving database"
 		DB.save()
+		Print "! DONE"
 	End Function
 	
 End Type

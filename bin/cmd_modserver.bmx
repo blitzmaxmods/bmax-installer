@@ -10,7 +10,7 @@
 'Import "TRelease.bmx"
 
 Function cmd_modserver( action:String, args:String[] )
-	Print "MODSERVER SUPPORT"
+	'Print "MODSERVER SUPPORT"
 	DebugStop
 	Select action.toLower()
 	Case "add"     ; cmd_modserver_add( args )
@@ -24,28 +24,29 @@ End Function
 ' Add a modserver to local configuration
 Function cmd_modserver_add( args:String[] )
 	'DebugStop
-	Print "args.length="+args.Length
+	'Print "args.length="+args.Length
 	If args.Length < 1 die( "No modserver specified" )
-	'
+	If args.Length > 1 die( "Invalid argument" )
 	DebugStop
-	Local repo_key:String = args[0].Replace("\","/")
 	
-	If TModserver.exists( repo_key ); die( "Modserver already exists" )
+	Local key:String = args[0].Replace("\","/")
+	If TModserver.exists( key ); die( "Modserver already exists" )
 	
 'DebugStop
-	Local modserver:TModserver = TModserver.Create( repo_key )
+	Local modserver:TModserver = TModserver.Create( key )
 	If Not modserver; Return
 	
 'DebugStop 
 
 	' Validate modserver before adding
-	If Not modserver.fetch(); die( "Invalid modserver" )
+	'If Not modserver.fetch(); die( "Invalid modserver" )
 
-DebugStop
+'DebugStop
 	' Update the newly added modserver
 	TModserver.add( modserver )
-	modserver.Update()
-Print( "## cmd_modserver_add() needs to be tidied up!!!" )
+	'modserver.Update()
+'Print( "## cmd_modserver_add() needs to be tidied up!!!" )
+		Print( "- New modserver added. Please run update to refresh packages." )
 	Return
 			
 
@@ -56,7 +57,7 @@ Print( "## cmd_modserver_add() needs to be tidied up!!!" )
 	
 	' Get repository
 	' (This will be an unofficial repository because it is added from CLI)
-	Local repository:TRepository = TRepository.get( repo_key )
+'	Local repository:TRepository = TRepository.get( repo_key )
 	'Local folder:String = repository.getFolder()
 		
 	'Local data:String[] = args[0].split(":")

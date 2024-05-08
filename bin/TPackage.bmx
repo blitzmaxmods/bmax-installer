@@ -47,15 +47,9 @@ Type TPackage
 	Field JInstall:JSON			{serializedname="install"}
 	
 	Function Add:Int( package:TPackage )
-		Print( "-> ADDING PACKAGE: "+package.name )
 		If Not list; Load()
-
 		' Check if package exists
-		If list.contains( package.name )
-			Print( "package already exists" )
-			Return False
-		End If
-
+		If list.contains( package.name ); Return False
 		' Add to database
 		list.insert( package.name, package )
 		Return True
@@ -94,9 +88,9 @@ Type TPackage
 
 	' Save database
 	Function Save()
-		Print( "SAVING PACKAGES" )
+		'Print( "SAVING PACKAGES" )
 
-		If Not list; Return
+		If Not list Or list.isempty(); Return
 		Local J:JSON = New JSON()
 		For Local key:String = EachIn list.keys()
 			Local package:TPackage = TPackage( list.valueforkey( key ) )

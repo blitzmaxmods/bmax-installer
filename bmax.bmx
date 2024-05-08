@@ -336,14 +336,14 @@ Print( "  !! THIS IS A BETA RELEASE" )
 Print( "  !! Some elements of this application may not be fully tested" )
 Print( "" )
 
-'DebugStop
+DebugLog( "## ARGUMENTS:   "+AppArgs.Length )
 Local args:String[] = AppArgs[1..]
-DebugLog( "## ARG COUNT: "+args.Length )
+DebugLog( "## ARGS LENGTH: "+args.Length )
 For Local n:Int = 0 Until args.Length
 	DebugLog n+") "+args[n]
 Next
 
-DebugLog( "## ARG COUNT: "+AppArgs.Length )
+' Display Help Information
 If AppArgs.Length < 2
 	RestoreData help_syntax
 	showdata()

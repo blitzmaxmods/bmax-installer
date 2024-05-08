@@ -45,22 +45,12 @@ Type TRepository
 
 	' Add new Repository
 	Function Add:Int( repository:TRepository )
-		Print( "-> ADDING REPOSITORY: "+repository.key )
-
 		If Not list; Load()
-'DebugStop
 		' Check if repository exists
-		'repository.key = repository.platform + ":" + repository.project
-		If list.contains( repository.key )
-			Print( "Repository already exists" )
-			Return False
-		End If
-		'
-		'Local repository:TRepository = TRepository.get( key )
+		If list.contains( repository.key ); Return False
 		' Add to list
 		list.insert( repository.key, repository )
-		Return True
-		
+		Return True		
 	End Function
 
 	' Create a repository
@@ -116,23 +106,23 @@ Type TRepository
 		If Not repositories; Return
 		
 		Print( repositories.prettify() )
-		DebugStop
+		'DebugStop
 		For Local key:String = EachIn repositories.keys()
-			DebugStop
+			'DebugStop
 			Local J:JSON = repositories.search( key )
 			Print( J.prettify() )
 			Local repository:TRepository = TRepository.Transpose( J )
 			repository.key = key
 			list.insert( key, repository )
 		Next
-		DebugStop
+		'DebugStop
 	End Function
 
 	' Save database
 	Function Save()
-		Print( "SAVING REPOSITORIES" )
+		'Print( "SAVING REPOSITORIES" )
 
-		If Not list; Return
+		If Not list Or list.isempty(); Return
 		Local J:JSON = New JSON()
 		For Local key:String = EachIn list.keys()
 			Local repository:TRepository = TRepository( list.valueforkey( key ) )
