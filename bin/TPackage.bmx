@@ -55,6 +55,17 @@ Type TPackage
 		Return True
 	End Function
 
+	' Remove all packages associated with a modserver
+	Function RemoveModserver:Int( modserver_key:String )
+		If Not list; Load()
+		For Local package:TPackage = EachIn list
+			If package.modserver_key = modserver_key
+				Print( "- Package "+package.name+ " removed" )
+				list.remove( package.key )
+			End If
+		Next
+	End Function
+	
 	' Check if package exists
 	Function Exists:Int( key:String )
 		If Not list; Load()

@@ -13,7 +13,7 @@ bmax version                        IMPLEMENTED     Application version
 
 bmax add modserver <modserver>      IMPLEMENTED     Manually add a new modserver
 
-bmax remove modserver <modserver>   TBC             Manually remove a modserver
+bmax remove modserver <modserver>   IMPLEMENTED     Manually remove a modserver
 bmax remove package <package>       TBC             Manually remove a package
 
 bmax install <package> [options]    TBC             Installs Blitzmax, a package or module
@@ -35,6 +35,7 @@ bmax list <options>                 TBC             List modules and/ packages
         -modules   | -m
         -packages  | -p
 
+bmax show modservers                IMPLEMENTED     Show list of modservers
 bmax show modules                   IMPLEMENTED     Show list of modules
 bmax show packages                  IMPLEMENTED     Show list of packages
 

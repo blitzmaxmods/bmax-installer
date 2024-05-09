@@ -6,8 +6,15 @@ Rem	COMMAND LINE TESTING:
 
 	bmax add modserver github:blitzmax-itspeedway-net/sandbox
 	bmax add modserver github:blitzmaxmods/bmax-installer
-	
+
+	bmax remove modserver github:blitzmaxmods/bmax-installer
+		- Not tested removal of packages (after an update)
+		
 	bmax show modservers
+	
+done to here
+	
+	bmax remove package bmx.json
 	
 	bmax show repos
 	bmax show repositories
@@ -17,7 +24,6 @@ Rem	COMMAND LINE TESTING:
 	bmax show apps
 	bmax show applications
 	
-done to here
 
 	bmax update
 	
@@ -352,13 +358,13 @@ EndIf
 DebugStop
 '	PARSE ARGUMENTS
 Select AppArgs[1].tolower()
-Case "add"
+Case "add","remove"
 	Select AppArgs[2].tolower()
-	Case "modserver" ; cmd_modserver( "add", AppArgs[3..] )
-	Case "repo","repository" ; cmd_repository( "add", AppArgs[3..] )
-	'Case "module"; cmd_module( "add", AppArgs[2..] )
-	'Case "package"; cmd_package( "add", AppArgs[2..] )
-	Default          ; die( "Unknown command: add " +AppArgs[2] )
+	Case "modserver" ; cmd_modserver( AppArgs[1].tolower(), AppArgs[3..] )
+	Case "repo","repository" ; cmd_repository( AppArgs[1].tolower(), AppArgs[3..] )
+	'Case "module"; cmd_module( AppArgs[1].tolower(), AppArgs[2..] )
+	'Case "package"; cmd_package( AppArgs[1].tolower(), AppArgs[2..] )
+	Default          ; die( "Unknown command: "+AppArgs[1]+" "+AppArgs[2] )
 	End Select	
 Case "modserver"
 	Select AppArgs[2].tolower()

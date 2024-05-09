@@ -62,6 +62,12 @@ DebugStop
 
 	End Function
 End Rem
+
+	' Remove modserver
+	Function Remove( key:String )
+		If Not list; Load()
+		list.remove( key )
+	End Function
 	
 	' Create a modserver with a new or existing repository
 	Function Create:TModserver( key:String )
@@ -102,7 +108,7 @@ End Rem
 	Function Load()
 		Local modserver:TModserver
 		
-		DebugStop
+		'DebugStop
 		' Pre-load repositories because modservers reference them
 '		TRepository.Load()
 		

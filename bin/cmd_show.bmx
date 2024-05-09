@@ -4,9 +4,9 @@
 
 ' Shows details for a specific module
 Function cmd_show( target:String, modid:String )
-	Const COL_KEY:Int = 0
-	Const COL_VALUE:Int = 1
-	Local table:String[][]
+	'Const COL_KEY:Int = 0
+	'Const COL_VALUE:Int = 1
+	'Local table:String[][]
 	DebugStop
 	Select target
 	Case "apps","applications"  ; show_packages("application")
@@ -17,7 +17,7 @@ Function cmd_show( target:String, modid:String )
 	Default                     ; die( "Unexpected argument:", AppTitle+" !" )
 	EndSelect
 	
-	End
+End Function
 
 Rem
 	' Scan the source file for information
@@ -48,19 +48,20 @@ Rem
 	Next
 EndRem	
 
-End Function
+
 
 Function show_modservers()
 	'DebugStop
 	
 	Local table:String[][] '=[[]]
-	Local width:Int[] = []
+	'Local width:Int[] = []
 	table :+ [[ "NAME", "REPOSITORY" ]]
 	For Local key:String = EachIn SYS.DB.get( "modservers" ).keys()
 		
 		Local J:JSON = SYS.DB.get( "modservers|"+key )
 		
 		Local name:String    = J.find( "name" ).ToString()
+		If name=""; name = "*none*"
 		
 		Local line:String[]  = [name,key]
 		table :+ [line]
@@ -72,7 +73,7 @@ End Function
 
 Function show_packages( filter:String="" )
 	Local table:String[][] '=[[]]
-	Local width:Int[] = []
+	'Local width:Int[] = []
 	table :+ [[ "PACKAGE", "TYPE", "VER", "REPOSITORY" ]]
 	For Local key:String = EachIn SYS.DB.get( "packages" ).keys()
 		
@@ -95,7 +96,7 @@ End Function
 
 Function show_repos()
 	Local table:String[][] '=[[]]
-	Local width:Int[] = []
+	'Local width:Int[] = []
 	table :+ [[ "REPOSITORY" ]]
 	For Local key:String = EachIn SYS.DB.get( "repositories" ).keys()
 		

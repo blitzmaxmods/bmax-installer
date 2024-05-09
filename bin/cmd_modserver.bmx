@@ -27,10 +27,10 @@ Function cmd_modserver_add( args:String[] )
 	'Print "args.length="+args.Length
 	If args.Length < 1 die( "No modserver specified" )
 	If args.Length > 1 die( "Invalid argument" )
-	DebugStop
+	'DebugStop
 	
 	Local key:String = args[0].Replace("\","/")
-	If TModserver.exists( key ); die( "Modserver already exists" )
+	If TModserver.exists( key ); die( key+" already exists!" )
 	
 'DebugStop
 	Local modserver:TModserver = TModserver.Create( key )
@@ -231,6 +231,20 @@ End Function
 
 ' Remove a modserver from local configuration
 Function cmd_modserver_remove( args:String[] )
+	DebugStop
+	Print "args.length="+args.Length
+	If args.Length < 1 die( "No modserver specified" )
+	If args.Length > 1 die( "Invalid argument" )
+	DebugStop
+	
+	Local key:String = args[0].Replace("\","/")
+	If Not TModserver.exists( key ); die( "Modserver doesn't exist" )
+	
+DebugStop
+	TModserver.remove( key )
+	Print( "- Modserver removed." )
+	TPackage.removeModserver( key )
+
 End Function
 
 ' Show a modserver
