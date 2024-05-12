@@ -6,9 +6,9 @@
 '   14 MAY 2023  Initial Creation
 '
 
-SuperStrict
+'SuperStrict
 
-Import "datetime.bmx"		'TODO: Move to Blitzmax own version
+'Import "datetime.bmx"		'TODO: Move to Blitzmax own version
 
 Const ONE_DAY:Int = 60*60*24
 
@@ -70,22 +70,23 @@ Function ShowTable( data:String[][], header:Int = True, gap:Int=2 )
 End Function
 
 ' Creates a folder if it doesn't exist
-Function MakeDirectory( folder:String, verbose:Int=False )
+Function MakeDirectory:Int( folder:String, verbose:Int=False )
 	'DebugStop
 
 	Select FileType(folder)
 	Case FILETYPE_DIR	' Already exists
-		Return
+		Return True
 	Case 0				' Does not exist
-		If Not CreateDir( folder )
+		If CreateDir( folder, True )
+			If verbose; Print( "Created folder "+folder )
+			Return True
+		Else
 			Print( "Unable to create '"+folder+"', please check your permissions" )
-		ElseIf verbose
-			Print( "Created folder "+folder )
 		End If
 	Default				' A File of error condition
 		Print( "Unable to create '"+folder+"'." )
 	End Select
-	
+	Return False
 End Function
 
 Function GetEnv:String( variable:String )
@@ -100,7 +101,9 @@ Function validCache:Int( cachefile:String, duration:Int )
 	'Print FileTime( cachefile )
 	'Print DateTime.time()
 	'Print duration
-	If FileType( cachefile ) = FILETYPE_FILE And FileTime( cachefile ) > DateTime.time() - duration; Return True
+	
+	'If FileType( cachefile ) = FILETYPE_FILE And FileTime( cachefile ) > DateTime.time() - duration; Return True
+	If FileType( cachefile ) = FILETYPE_FILE And FileTime( cachefile ) > TimestampNow() - duration; Return True
 	Return False
 End Function
 

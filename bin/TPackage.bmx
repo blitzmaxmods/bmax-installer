@@ -38,13 +38,16 @@ Type TPackage
 	Field class:String			{serializedname="type"}			'module or application
 	Field repo_key:String		{serializedname="repository"}
 	Field modserver_key:String	{serializedname="modserver"} 	' The modserver we learnt this from
-	Field commitfile:String 	{serializedname="commit"}
+	'Field commitfile:String 	{serializedname="commit"}
+	Field branch:String = "master"
 
 	' Fields used to access data inside an archive file
 	Field folder:String			' Folder inside archive
 	Field target:String			' Target folder (Relative to BMX_ROOT)
 	Field JDependencies:JSON	{serializedname="dependencies"}
 	Field JInstall:JSON			{serializedname="install"}
+	
+	Field lastCommit:Long		' Last commit date
 	
 	Function Add:Int( package:TPackage )
 		If Not list; Load()
@@ -142,14 +145,164 @@ End Rem
 	
 	' Update this package
 	Method Update:Int()
+		DebugStop
+'THIS IS RETURNING A TREPOSITORY INSTEAD OF A GITHUB REPOSITORY
+'IT IS Not AN ISSUE IN FORKEY
+'THE ISSUE SEEMS To BE THAT THE LIST CONTAINS INCORRECT TYPES WHEN LOADED
 		Local repository:TRepository = TRepository.get( repo_key )
 		If Not repository Return Fail( "Failed to get repository" )
 		
 		DebugStop
-		Local commit:String = commitfile
-		If commit = ""; commit = "package.json"
+		'Local commit:String = commitfile
+		'If commit = ""; commit = "package.json"
+		'If branch = ""; branch = "master"
 		
-		Local lastcommit:String = repository.getLastCommit( commit )
+		Local lastcommit:SDateTime = repository.getLastCommit( branch )
+
+		Print( "-Last commit: "+lastCommit )
+		
+		DebugStop
+
+		If lastcommit.ToEpochSecs() > Self.lastcommit
+			Print( "* Found version dated "+lastcommit.ToString() )
+			Self.lastcommit = lastcommit
+		End If
+		
+		
+Rem		
+
+{
+  "author": {
+    "avatar_url": "https://avatars.githubusercontent.com/u/95883?v=4",
+    "events_url": "https://api.github.com/users/woollybah/events{
+      /privacy
+    }",
+    "followers_url": "https://api.github.com/users/woollybah/followers",
+    "following_url": "https://api.github.com/users/woollybah/following{
+      /other_user
+    }",
+    "gists_url": "https://api.github.com/users/woollybah/gists{
+      /gist_id
+    }",
+    "gravatar_id": "",
+    "html_url": "https://github.com/woollybah",
+    "id": 95883,
+    "login": "woollybah",
+    "node_id": "MDQ6VXNlcjk1ODgz",
+    "organizations_url": "https://api.github.com/users/woollybah/orgs",
+    "received_events_url": "https://api.github.com/users/woollybah/received_events",
+    "repos_url": "https://api.github.com/users/woollybah/repos",
+    "site_admin": False,
+    "starred_url": "https://api.github.com/users/woollybah/starred{
+      /owner
+    }{
+      /repo
+    }",
+    "subscriptions_url": "https://api.github.com/users/woollybah/subscriptions",
+    "type": "User",
+    "url": "https://api.github.com/users/woollybah"
+  },
+  "comments_url": "https://api.github.com/repos/bmx-ng/maxide/commits/306fde2021198fa5cc7509d5a9872613f2789d0b/comments",
+  "commit": {
+    "author": {
+      "date": "2023-04-17T11:48:16Z",
+      "email": "woollybah@gmail.com",
+      "name": "Brucey"
+    },
+    "comment_count": 0,
+    "committer": {
+      "date": "2023-04-17T11:48:16Z",
+      "email": "noreply@github.com",
+      "name": "GitHub"
+    },
+    "message": "Merge pull request #81 from thareh/master\n\nFixed UTF8 characters in output panel",
+    "tree": {
+      "sha": "2f678b69988444c8ba2840dc71f05934b7ad8188",
+      "url": "https://api.github.com/repos/bmx-ng/maxide/git/trees/2f678b69988444c8ba2840dc71f05934b7ad8188"
+    },
+    "url": "https://api.github.com/repos/bmx-ng/maxide/git/commits/306fde2021198fa5cc7509d5a9872613f2789d0b",
+    "verification": {
+      "payload": "tree 2f678b69988444c8ba2840dc71f05934b7ad8188\nparent 0d0193cb06bfcac9288a4c78e0d6e36659518e38\nparent a8d8ceb751d6103baad4d462a024b0e8389ed892\nauthor Brucey <woollybah@gmail.com> 1681732096 +0100\ncommitter GitHub <noreply@github.com> 1681732096 +0100\n\nMerge pull request #81 from thareh/master\n\nFixed UTF8 characters in output panel",
+      "reason": "valid",
+      "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsBcBAABCAAQBQJkPTIACRBK7hj4Ov3rIwAA9dYIAIm9k6nb4c4m2ixjz3ZFAofx\nS2FvUiJ7SGEKt+ZH6CrIH0EMe1AlgVCj9OZx3byVxCxP6ns2O7+dKyM9Puh/yNYs\nyJdAbcbkc+JE4DaWcUL2aVojkUqoZc+GrxkKcjVxUcRvMIAfWmv/PYOStNf3fVEI\n7hM5goTLDlPYorB26fDTDRmwYSH8ap1VMDUevvQS8MQ6QbDcPPx6tNCTqRY/Nl2D\nT2ak4DvNuBUi3hxhCs4IpFMlnqST8Ezt8Dyxnpl0fUCeiypCf8kS8CRCLbmeUZQ7\nuJeJXR+Z933yDR0A1/1wrpu7M7JgwALmZ9w5NlafmoC4qNhjt23qF6gznie7rqw=\n=3q5Y\n-----END PGP SIGNATURE-----\n",
+      "verified": True
+    }
+  },
+  "committer": {
+    "avatar_url": "https://avatars.githubusercontent.com/u/19864447?v=4",
+    "events_url": "https://api.github.com/users/web-flow/events{
+      /privacy
+    }",
+    "followers_url": "https://api.github.com/users/web-flow/followers",
+    "following_url": "https://api.github.com/users/web-flow/following{
+      /other_user
+    }",
+    "gists_url": "https://api.github.com/users/web-flow/gists{
+      /gist_id
+    }",
+    "gravatar_id": "",
+    "html_url": "https://github.com/web-flow",
+    "id": 19864447,
+    "login": "web-flow",
+    "node_id": "MDQ6VXNlcjE5ODY0NDQ3",
+    "organizations_url": "https://api.github.com/users/web-flow/orgs",
+    "received_events_url": "https://api.github.com/users/web-flow/received_events",
+    "repos_url": "https://api.github.com/users/web-flow/repos",
+    "site_admin": False,
+    "starred_url": "https://api.github.com/users/web-flow/starred{
+      /owner
+    }{
+      /repo
+    }",
+    "subscriptions_url": "https://api.github.com/users/web-flow/subscriptions",
+    "type": "User",
+    "url": "https://api.github.com/users/web-flow"
+  },
+  "files": [
+    {
+      "additions": 1,
+      "blob_url": "https://github.com/bmx-ng/maxide/blob/306fde2021198fa5cc7509d5a9872613f2789d0b/maxide.bmx",
+      "changes": 2,
+      "contents_url": "https://api.github.com/repos/bmx-ng/maxide/contents/maxide.bmx?ref=306fde2021198fa5cc7509d5a9872613f2789d0b",
+      "deletions": 1,
+      "filename": "maxide.bmx",
+      "patch": "@@ -4074,
+      7 +4074,
+      7 @@ Type TOutputPanel Extends TToolPanel\t'used build and run\n \r\n \t\tbytes=pipe.ReadPipe()\r\n \t\tIf bytes\r\n-\t\t\tline$=String.FromBytes(bytes,
+      Len bytes)\r\n+\t\t\tline$=String.FromUTF8Bytes(bytes,
+      Len bytes)\r\n \t\t\tline=line.Replace(Chr(13),
+      \"\")\r\n \t\t\tWrite line\r\n \t\tEndIf\r",
+      "raw_url": "https://github.com/bmx-ng/maxide/raw/306fde2021198fa5cc7509d5a9872613f2789d0b/maxide.bmx",
+      "sha": "309ecf103b1423a2801d46ce359df5217dcd064a",
+      "status": "modified"
+    }
+  ],
+  "html_url": "https://github.com/bmx-ng/maxide/commit/306fde2021198fa5cc7509d5a9872613f2789d0b",
+  "node_id": "C_kwDOAY7CAdoAKDMwNmZkZTIwMjExOThmYTVjYzc1MDlkNWE5ODcyNjEzZjI3ODlkMGI",
+  "parents": [
+    {
+      "html_url": "https://github.com/bmx-ng/maxide/commit/0d0193cb06bfcac9288a4c78e0d6e36659518e38",
+      "sha": "0d0193cb06bfcac9288a4c78e0d6e36659518e38",
+      "url": "https://api.github.com/repos/bmx-ng/maxide/commits/0d0193cb06bfcac9288a4c78e0d6e36659518e38"
+    },
+    {
+      "html_url": "https://github.com/bmx-ng/maxide/commit/a8d8ceb751d6103baad4d462a024b0e8389ed892",
+      "sha": "a8d8ceb751d6103baad4d462a024b0e8389ed892",
+      "url": "https://api.github.com/repos/bmx-ng/maxide/commits/a8d8ceb751d6103baad4d462a024b0e8389ed892"
+    }
+  ],
+  "sha": "306fde2021198fa5cc7509d5a9872613f2789d0b",
+  "stats": {
+    "additions": 1,
+    "deletions": 1,
+    "total": 2
+  },
+  "url": "https://api.github.com/repos/bmx-ng/maxide/commits/306fde2021198fa5cc7509d5a9872613f2789d0b"
+}		
+EndRem
+	
+		DebugStop
+		
 	End Method
 	
 Rem

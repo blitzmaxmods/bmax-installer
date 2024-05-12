@@ -51,6 +51,8 @@ bmax upgrade <options>              TBC             Upgrade local installation
 
 bmax update                         IN PROGRESS     Update local database
 
+bmax update modservers              IN PROGRESS     Forces a reload of modserver.json
+
 bmax update <package|module> <options>
 
 bmax uninstall <package|module> <options>

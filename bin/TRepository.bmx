@@ -91,6 +91,20 @@ Type TRepository
 	Function ForKey:TRepository( key:String )
 		If Not list; Load()
 		Return TRepository( list.valueforkey( key ) )
+Rem		' Get platform from key
+		Local data:String[] = key.split(":")
+		If data.Length <> 2; die( "!! Invalid repository definition" )
+		Local platform:String = data[0].tolower()
+			
+		Local repository:TRepository
+		Select platform
+		Case "git","github";		Return TRepositoryGithub( list.valueforkey( key ) )
+'		Case "sf","sourceforge";	Return TRepositorySourceForge( list.valueforkey( key ) )
+'		Case "webapi";				Return TRepositoryWebApi( list.valueforkey( key ) )
+		Default
+			die( "Unsupported platform: "+platform )
+		End Select
+EndRem
 	End Function
 
 	' Get list of keys (repositories)
@@ -102,6 +116,7 @@ Type TRepository
 	' Load database
 	Function Load()
 		list = New TMap()
+'DebugStop
 		Local repositories:JSON = SYS.DB.get( "repositories" )
 		If Not repositories; Return
 		
@@ -110,6 +125,7 @@ Type TRepository
 		For Local key:String = EachIn repositories.keys()
 			'DebugStop
 			Local J:JSON = repositories.search( key )
+			If Not J Or J.isinvalid(); Continue
 			Print( J.prettify() )
 			Local repository:TRepository = TRepository.Transpose( J )
 			repository.key = key
@@ -133,7 +149,13 @@ Type TRepository
 	
 	' Transform a JRepository to a repository
 	Function Transpose:TRepository( J:JSON )
-		Local repository:TRepository = TRepository( J.Transpose( "TRepository" ) )
+		Local platform:String = J.find( "platform" ).ToString()
+		Local repository:TRepository
+		'
+		Select Lower(platform)
+		Case "github"; repository = TRepositoryGithub.Transpose( J )
+		End Select
+		'
 		If repository; repository.key = repository.platform + ":" + repository.project
 		Return repository
 	End Function
@@ -286,7 +308,7 @@ EndRem
 	Method downloadString:String( uri:String, description:String="File" ) Abstract
 
 	' Get details regarding the last commit on this repository
-	Method getLastCommit:String( filepath:String ) Abstract
+	Method getLastCommit:SDateTime( filepath:String ) Abstract
 	
 	' Retrieves the URL for a modserver (Platform specific)
 	Method getModserverURL:String() Abstract

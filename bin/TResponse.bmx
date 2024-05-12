@@ -16,7 +16,7 @@ Type TResponse
 	'Field redirectTime:Double
 	'Field redirectCount:Int
 	'Field sizeUpload:Double
-	'Field sizeDownload:Double
+	Field sizeDownload:Double
 	'Field speedDownload:Double
 	'Field speedUpload:Double
 	'Field headerSize:Int
@@ -47,7 +47,7 @@ Type TResponse
 		'redirectTime = info.redirectTime()
 		'redirectCount = info.redirectCount()
 		'sizeUpload = info.sizeUpload()
-		'sizeDownload = info.sizeDownload()
+		sizeDownload = info.sizeDownload()
 		'speedDownload = info.speedDownload()
 		'speedUpload = info.speedUpload()
 		'headerSize = info.headerSize()
@@ -64,10 +64,11 @@ Type TResponse
 	End Method
 	
 	Method reveal:String()
-		Local result:String
-		result  = "code:        "+code+"~n"
-		result :+ "contentType: "+contentType+"~n"
-		result :+ "errorCode:   "+errorCode			'+"~n"	
+		Local result:String 
+		result  = "code:         "+code+"~n"
+		result  = "sizeDownload: "+sizeDownload+"~n"
+		result :+ "contentType:  "+contentType+"~n"
+		result :+ "errorCode:    "+errorCode			'+"~n"	
 		Return result
 	End Method
 End Type

@@ -12,7 +12,18 @@ Rem	COMMAND LINE TESTING:
 		
 	bmax show modservers
 	
+working on these
+
+	bmax set <variable> <value>
+	bmax clear <variable>
+	bmax show var|variables
+
+	bmax update modservers
+	bmax update
+	
 done to here
+	
+	
 	
 	bmax remove package bmx.json
 	
@@ -25,7 +36,7 @@ done to here
 	bmax show applications
 	
 
-	bmax update
+	
 	
 	bmax install blitzmax
 	bmax install blitzmax -latest
@@ -229,9 +240,12 @@ SuperStrict
 'Import bah.libcurl	' Obsolete, use net.libcurl
 'Import net.libcurl
 'Import bmx.json
+'Import bmx.timestamp				' TODO: Move to Blitzmax official time
 
 'Import "bin/adler32.bmx"		' Also part of zlib but not exposed!
-Import "bin/datetime.bmx"		'TODO: Move to Blitzmax own version
+
+'Import "bin/datetime.bmx"			'TODO: Move to Blitzmax own version
+
 Import "bin/unzip.bmx"
 
 Import "bin/system.bmx"			' System specific settings
@@ -343,10 +357,10 @@ Print( "  !! Some elements of this application may not be fully tested" )
 Print( "" )
 
 DebugLog( "## ARGUMENTS:   "+AppArgs.Length )
-Local args:String[] = AppArgs[1..]
-DebugLog( "## ARGS LENGTH: "+args.Length )
-For Local n:Int = 0 Until args.Length
-	DebugLog n+") "+args[n]
+'Local args:String[] = AppArgs[1..]
+'DebugLog( "## ARGS LENGTH: "+args.Length )
+For Local n:Int = 0 Until AppArgs.Length
+	DebugLog n+") "+AppArgs[n]
 Next
 
 ' Display Help Information
@@ -361,7 +375,7 @@ Select AppArgs[1].tolower()
 Case "add","remove"
 	Select AppArgs[2].tolower()
 	Case "modserver" ; cmd_modserver( AppArgs[1].tolower(), AppArgs[3..] )
-	Case "repo","repository" ; cmd_repository( AppArgs[1].tolower(), AppArgs[3..] )
+	'Case "repo","repository" ; cmd_repository( AppArgs[1].tolower(), AppArgs[3..] )
 	'Case "module"; cmd_module( AppArgs[1].tolower(), AppArgs[2..] )
 	'Case "package"; cmd_package( AppArgs[1].tolower(), AppArgs[2..] )
 	Default          ; die( "Unknown command: "+AppArgs[1]+" "+AppArgs[2] )
@@ -381,11 +395,11 @@ Case "modserver"
 '	Case "add","remove" ; cmd_package( AppArgs[2].tolower(), AppArgs[3..] )
 '	Default             ; die( "Unknown command: package " +AppArgs[2] )
 '	End Select	
-Case "repo","repository"
-	Select AppArgs[2].tolower()
-	Case "add","remove" ; cmd_repository( AppArgs[2].tolower(), AppArgs[3..] )
-	Default             ; die( "Unknown command: "+ AppArgs[1]+" "+AppArgs[2] )
-	End Select	
+'Case "repo","repository"
+'	Select AppArgs[2].tolower()
+'	Case "add","remove" ; cmd_repository( AppArgs[2].tolower(), AppArgs[3..] )
+'	Default             ; die( "Unknown command: "+ AppArgs[1]+" "+AppArgs[2] )
+'	End Select	
 Case "help"
 	If AppArgs.Length < 2
 		RestoreData help_syntax
@@ -401,18 +415,19 @@ Case "help"
 'Case "list"		' Show installed packages
 '	cmd_list()
 Case "show"
-	If args.Length<>2; die( "Invalid command" )
+	If AppArgs.Length<>3; die( "Invalid command" )
 	Select AppArgs[2].tolower()
-	Case "apps", "applications" ; cmd_show( AppArgs[2].tolower(), AppArgs[2] )
+'	Case "apps", "applications" ; cmd_show( AppArgs[2].tolower(), AppArgs[2] )
 	Case "modservers"           ; cmd_show( AppArgs[2].tolower(), AppArgs[2] )
-	Case "modules"              ; cmd_show( AppArgs[2].tolower(), AppArgs[2] )
-	Case "packages"             ; cmd_show( AppArgs[2].tolower(), AppArgs[2] )
-	Case "repos","repositories" ; cmd_show( AppArgs[2].tolower(), AppArgs[2] )
+'	Case "modules"              ; cmd_show( AppArgs[2].tolower(), AppArgs[2] )
+'	Case "packages"             ; cmd_show( AppArgs[2].tolower(), AppArgs[2] )
+'	Case "repos","repositories" ; cmd_show( AppArgs[2].tolower(), AppArgs[2] )
 	Default                     ; die( "Unknown command: show " +AppArgs[2] )
 	End Select	
 'Case "debug"
 '	DebugStop
 '	cmd_debug( "all-modules.csv" )
+Rem
 Case "install"
 	DebugStop
 	If AppArgs.Length < 3; Die( "No package specified" )
@@ -430,14 +445,26 @@ Case "install"
 		DebugStop ' DISABLED DURING DEBUGGING
 '		cmd_install_package( AppArgs[2], getOptions( AppArgs[3..] ) )
 	EndSelect
+EndRem
 'Case "search"
 'Case "download"		
 'Case "remove", "uninstall"
 Case "update"
+	DebugStop
 	Print AppArgs.Length
 	' Update packages from online repositories
-	DebugStop
-	cmd_update() 
+	If AppArgs.Length = 2
+		' Update
+		cmd_update( "", False )
+	ElseIf AppArgs.Length = 3 And AppArgs[2].tolower() = "modservers"
+		' update modservers
+		cmd_update( "", True )
+	ElseIf AppArgs.Length = 4 And AppArgs[2].tolower() = "modserver"
+		' update modserver <key>
+		cmd_update( AppArgs[3], True )
+	Else
+		die( "Invalid request" )
+	EndIf
 Case "upgrade"
 	Print "## UPGRADE IS NOT IMPLEMENTED"
 	' With no arguments we upgrade to the latest offical release

@@ -11,12 +11,52 @@
 
 'Import "TRelease.bmx"
 
-Function cmd_update()
+Function cmd_update( key:String, force:Int )
 	
-	Print( "Updating modservers." )	
-	For Local key:String = EachIn TModserver.keys()
-		Local modserver:TModserver = TModserver.forkey( key )
-	Next
+		
+	'DebugStop
+	Local modserver:TModserver
+	If key
+		' Update a specific modserver
+		modserver = TModserver.forkey( Lower(key) )
+		If Not modserver; die( key + " is invalid" )
+		Print( "Updating modserver "+modserver.GetName() )
+		update_modserver( modserver, force )
+		' Update packages on given modserver
+		update_packages( Lower(key) )
+	Else
+		'Print( "Updating modservers" )
+		' Update all modservers
+		For Local key:String = EachIn TModserver.keys()
+			modserver = TModserver.forkey( key )
+			If Not modserver
+				fail( key + " is invalid" )
+				Continue
+			End If
+			Print( "Updating modserver "+modserver.GetName() )
+			update_modserver( modserver, force )
+		Next
+		' Update packages on all modservers
+		update_packages()
+	End If
+
+End Function
+
+' Updates modserver
+Function update_modserver:Int( modserver:TModserver, force:Int )
+	' Show the modserver name
+	'If modserver.name
+	Print( modserver.GetName() )
+	'Else
+	'	Print( "("+modserver.key+")" )
+	'End If
+	
+	' Update the modserver
+	If force Or modserver.expired(); modserver.Update()
+End Function
+
+Rem
+	Return
 
 ' OLD FROM HERE
 
@@ -67,8 +107,16 @@ Print( "UPDATING MODSERVER IN DEBUG MODE - PLEASE FIX BEFORE RELEASE" )
 	If Not J Or J.isInvalid(); J = New JSON()
 	
 	
+EndRem
+
+Function update_packages( modserver_key:String = "" )
+	' Update packages on specific modserver
+	For Local key:String = EachIn TPackage.keys()
+		Local package:TPackage = TPackage.forkey( key )
+		' Do not update if modserver mismatch
+		If modserver_key And package.modserver_key <> modserver_key; Continue
+		Print( "-"+package.name )
+		package.Update()
+	Next
 End Function
 
-Function update_modserver( J:JSON )
-
-End Function

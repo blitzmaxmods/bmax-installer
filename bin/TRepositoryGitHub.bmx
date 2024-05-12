@@ -68,45 +68,39 @@ Type TRepositoryGitHub Extends TRepository
 
 	' Get details regarding the last commit on this repository
 	' http://api.github.com/repos/{USERNAME}/{REPO}/commits?path={FILEPATH}&page=1&per_page=1
-	Method getLastCommit:String( filepath:String )
-		DebugStop
-
+	Method getLastCommit:SDateTime( branch:String = "master" )
+'		DebugStop
+'"https://api.github.com/repos/{owner}/{repository_name}/commits/{branch_name}"
 		Local curl:TCurlEasy = New TCurlEasy.Create()
-		Local encoded:String = curl.escape( filepath )
-		Local url:String     = GITHUB_API + project +"commits?path="+encoded+"&page=1&per_page=1"
+		'Local encoded:String = curl.escape( filepath )
+		'Local url:String     = GITHUB_API + project +"/commits?path="+encoded+"&page=1&per_page=1"
+		Local url:String     = GITHUB_API + project +"/commits/"+branch
 		
+		' Retrieve a response from the server
 		Local response:TResponse = download( url )
+		If response; Print( response.reveal() )
+	
+		' Extract the response text
+		Local J:JSON = JSON.parse( response.Text )
+		If Not J Or J.isInvalid(); Return Null
+		'Print( J.prettify() )
 		DebugStop
 		
-		'Return response
-Rem
-		Local curl:TCurlEasy = New TCurlEasy.Create()
-		Local encoded:String = curl.escape( filepath )
+		Local CommitString:String = J.search( "commit|author|date" ).ToString()
+
+		'Print( "COMMIT DATE: "+CommitString )
+		' Use CTime to convert datestring into SDateTime
+		Local tm:CTime = New CTime( CommitString, "%Y-%m-%dT%H:%M:%S%z" )
+		Local dt:SDateTime = tm.convert()
+		'Print( "TIMESTAMP:   "+tm.timestamp() )
+		'Print( "DATE:        "+tm.format() )
+
+		'Local now:CTime = New CTime()
+		'Print( "NOW:         "+now.format() )
 		
-		'url = Replace( url, "${USERNAME}", username )
-		'url = Replace( url, "${REPO}", modrepo )
-		'url = Replace( url, "${FILEPATH}", encoded )
-		
-		
-		DebugStop
-		' Optionally add users github token
-		Local headers:String[] 
-		Local githubEnvironment:String = CONFIG["github|environment"]
-		If Not githubEnvironment; githubEnvironment = "GITHUB_TOKEN"
-		Local token:String = getenv_( "GITHUB_TOKEN" )
-		If token = ""
-			Print "WARNING: GITHUB token not found in '"+githubEnvironment+"'"
-		Else
-			Print "Using GITHUB token in environment variable '"+githubEnvironment+"'"
-			headers = [ "Authorisation: "+token ]
-		End If
-		headers :+ [ "Content-Type:application/json" ]
-		
-		Local response:TResponse = downloadString( url, headers )
-		DebugStop
-		
-		Return response.Text
-EndRem	
+		'DebugStop
+		'Return tm.timestamp()
+		Return dt
 	End Method
 	
 	' Get URL to modserver.json
@@ -185,7 +179,7 @@ End Rem
 			Local jtext:JSON = JSON.parse( response.Text )
 			If Not jtext Or jtext.isInvalid(); Return ""
 			'
-			'Local content:String
+			'Print( jtext.prettify() )
 			'DebugStop
 			'Local sha:String = jtext.find["sha"]
 			Local encoded:String = jtext.find("content").ToString()

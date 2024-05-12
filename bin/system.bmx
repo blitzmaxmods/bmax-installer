@@ -4,18 +4,21 @@ SuperStrict
 ' specific information in one place
 
 Import bmx.json
+Import "../mod/ctime.bmx"		' Time features not supporte by SDateTime
 
 Import "../default-data.bmx"
 
 Import "config.bmx"
-Import "utils.bmx"
+
 
 Import "TResponse.bmx"
 
+Include "utils.bmx"
 Include "database.bmx"
 Include "TModserver.bmx"
 Include "TRepository.bmx"
 Include "TPackage.bmx"
+Include "datetime.bmx"
 
 Type SYS
 

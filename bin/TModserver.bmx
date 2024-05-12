@@ -23,8 +23,8 @@ Type TModserver
 
 	Global list:TMap
 
-	Field key:String				{noserialise}	' Database index
-	Field repo_key:String			{serializedname="repository"}
+	Field key:String				{serializedname="repository"}	' Database index
+	'Field repo_key:String			
 	Field repository:TRepository	{notranspose noserialise}
 	Field name:String				' Name of this modserver
 	Field cachefile:String			' File where cached "modserver.json" is saved
@@ -35,9 +35,9 @@ Type TModserver
 	Function Add:Int( modserver:TModserver )
 		If Not list; Load()
 		' Check if modserver exists
-		If list.contains( modserver.repo_key ); Return False
+		If list.contains( modserver.key ); Return False
 		' Add to database
-		list.insert( modserver.repo_key, modserver )
+		list.insert( modserver.key, modserver )
 		Return True
 	End Function
 	
@@ -96,6 +96,9 @@ End Rem
 	Function ForKey:TModserver( key:String )
 		If Not list; Load()
 		Return TModserver( list.valueforkey( key ) )
+		'Local modserver:TModserver = TModserver( list.valueforkey( key ) )
+		'If modserver; modserver.key = key
+		'Return modserver
 	End Function
 
 	' Get list of keys (modservers)
@@ -166,7 +169,7 @@ End Rem
 
 			' Confirm Modserver exists
 			
-			If Not TModserver.exists( modserver.repo_key )
+			If Not TModserver.exists( modserver.key )
 				Print( "- Adding modserver: "+modserver.name )
 				TModserver.add( modserver )
 			End If
@@ -215,7 +218,7 @@ End Rem
 		Local modserver:TModserver = TModserver( J.Transpose( "TModserver" ) )
 		' Get repository
 		'DebugStop
-		modserver.repository = TRepository.get( modserver.repo_key )
+		modserver.repository = TRepository.get( modserver.key )
 		modserver.setCache()
 		Return modserver
 	End Function
@@ -226,7 +229,7 @@ End Rem
 	Method New( key:String )
 'DebugStop
 		Self.key        = key
-		Self.repo_key   = key
+		'Self.repo_key   = key
 		Self.repository = TRepository.get( key )
 		setcache()
 	End Method
@@ -267,13 +270,14 @@ End Rem
 			' Validate the JSON
 			Local J:JSON = JSON.parse( def )
 			If J And J.isValid()
+				'DebugStop
 				' Write the downloaded file to a cache
-				SaveString( def, cachefile )
+				If MakeDirectory( ExtractDir( cachefile )); SaveString( def, cachefile )
 				' Save modserver definition into modserver
 				JModserver = J
 				' Extract modserver name from modserver definition
 				name = Trim( jmodserver.find("name").ToString() )
-				If name=""; name = repo_key
+				If name=""; name = key
 				Return True
 			End If
 		End If
@@ -333,14 +337,20 @@ EndRem
 		Return JSON.serialise( Self )
 	End Method
 
+	' Get a modserver name or fallback to its key
+	Method GetName:String()
+		If name; Return name
+		Return "("+key+")"
+	End Method
+	
 	' Set the location of the cache file
 	Method setcache()
 		cachefile = SYS.CACHEPATH+repository.cachefolder()+"modserver.json"
 	End Method
-
+	
 	' Update attempts to download and update package information
 	Method Update:Int()
-		DebugStop
+		'DebugStop
 		
 		' If we dont have a modserver definition, get one from the server or fail!
 		If Not Jmodserver And Not fetch(); Return False
@@ -412,10 +422,10 @@ EndRem
 			Local repository:TRepository = TRepository.Create( package.repo_key )
 			If Not TRepository.exists( package.repo_key ); TRepository.Add( repository )
 			
-			DebugStop
+			'DebugStop
 			' A Package is official if it's repository is the same organisation
 			' as the modserver that provided it.
-			package.official = repository.isofficial( Self.repo_key )
+			package.official = repository.isofficial( Self.key )
 			
 Rem
 
