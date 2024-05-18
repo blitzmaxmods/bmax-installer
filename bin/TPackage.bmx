@@ -159,13 +159,13 @@ End Rem
 		
 		Local lastcommit:SDateTime = repository.getLastCommit( branch )
 
-		Print( "-Last commit: "+lastCommit )
+		Print( "-Last commit: "+lastCommit.ToString() )
 		
 		DebugStop
 
 		If lastcommit.ToEpochSecs() > Self.lastcommit
 			Print( "* Found version dated "+lastcommit.ToString() )
-			Self.lastcommit = lastcommit
+			Self.lastcommit = lastcommit.ToEpochSecs()
 		End If
 		
 		

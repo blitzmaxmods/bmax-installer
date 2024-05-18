@@ -1,6 +1,7 @@
 
 '	BlitzMax installer
 '	(c) Copyright Si Dunford [Scaremonger], FEB 2023, All rights reserved
+'	VERSION 0
 
 Rem	COMMAND LINE TESTING:
 
@@ -12,14 +13,14 @@ Rem	COMMAND LINE TESTING:
 		
 	bmax show modservers
 	
+	bmax update modservers
+	bmax update
+	
 working on these
 
 	bmax set <variable> <value>
 	bmax clear <variable>
 	bmax show var|variables
-
-	bmax update modservers
-	bmax update
 	
 done to here
 	
@@ -253,6 +254,7 @@ Import "bin/system.bmx"			' System specific settings
 'Include "bin/cmd_list.bmx"
 Include "bin/cmd_modserver.bmx"
 Include "bin/cmd_repository.bmx"
+Include "bin/cmd_set_and_clear.bmx"
 Include "bin/cmd_show.bmx"
 Include "bin/cmd_update.bmx"
 
@@ -267,16 +269,17 @@ SYS.initialise()
 ' LAUNCH APPLICATION
 
 AppTitle = "bmax"
-Local AppVersion:String = "0.0.0"
+Local AppVersion:String = "0.0.5"
 
 '	CONFIRM MODULE VERSIONS
 
-If Not JSON.versioncheck( 3.2, 0 ) 
+If Not JSON.versioncheck( 3.2, 63 ) 
 	Print( AppTitle + " has been compiled with incompatible 'bmx.json'." )
 	Print( "Please update bmx.json and re-compile" )
 	End
 EndIf
 
+Print AppTitle+" version "+AppVersion
 
 Rem
 
@@ -289,8 +292,6 @@ SYS.Update()
 
 ' LAUNCH APPLICATION
 
-AppTitle = "bmax"
-Local AppVersion:String = "0.0.0"
 
 Include "bin/TRepository.bmx"
 Include "bin/TPackage.bmx"
@@ -380,6 +381,9 @@ Case "add","remove"
 	'Case "package"; cmd_package( AppArgs[1].tolower(), AppArgs[2..] )
 	Default          ; die( "Unknown command: "+AppArgs[1]+" "+AppArgs[2] )
 	End Select	
+Case "clear"
+	If AppArgs.Length<3; die( "Invalid command" )
+	cmd_clear_variable( AppArgs[2..] )
 Case "modserver"
 	Select AppArgs[2].tolower()
 	Case "add","remove" ; cmd_modserver( AppArgs[2].tolower(), AppArgs[3..] )
@@ -414,14 +418,20 @@ Case "help"
 	
 'Case "list"		' Show installed packages
 '	cmd_list()
+Case "set"
+	If AppArgs.Length<3; die( "Invalid command" )
+	cmd_set_variable( AppArgs[2..] )
 Case "show"
-	If AppArgs.Length<>3; die( "Invalid command" )
+	DebugStop
+	If AppArgs.Length<3; die( "Invalid command" )
 	Select AppArgs[2].tolower()
 '	Case "apps", "applications" ; cmd_show( AppArgs[2].tolower(), AppArgs[2] )
 	Case "modservers"           ; cmd_show( AppArgs[2].tolower(), AppArgs[2] )
 '	Case "modules"              ; cmd_show( AppArgs[2].tolower(), AppArgs[2] )
-'	Case "packages"             ; cmd_show( AppArgs[2].tolower(), AppArgs[2] )
-'	Case "repos","repositories" ; cmd_show( AppArgs[2].tolower(), AppArgs[2] )
+	Case "packages"             ; cmd_show( AppArgs[2].tolower(), AppArgs[2] )
+	Case "repos","repositories" ; cmd_show( AppArgs[2].tolower(), AppArgs[2] )
+	Case "var","variable"		; cmd_show_variable( AppArgs[3..] )
+	Case "vars","variables"		; cmd_show_variables( AppArgs[3..] )
 	Default                     ; die( "Unknown command: show " +AppArgs[2] )
 	End Select	
 'Case "debug"

@@ -1,8 +1,12 @@
 '	BlitzMax installer
 '	(c) Copyright Si Dunford [Scaremonger], FEB 2023, All rights reserved
 
-SuperStrict
-Import bmx.json
+'SuperStrict
+'Import bmx.json
+
+Const DEFAULT_BLITZMAX_PATH:String    = "<HOMEPATH>/BlitzMax/"
+Const DEFAULT_CERTIFICATE_PATH:String = "<APPPATH>/certificate/"
+Const DEFAULT_CERTIFICATE_NAME:String = "cacert.pem"
 
 Type TConfig
 	
@@ -146,6 +150,11 @@ EndRem
 		If result = ""; Return otherwise
 		Return result
 	End Method
+	
+	' Requires JSON version 3.2, build 63
+	Method unset( key:String )
+		settings.unset( key )
+	End Method
 
 	Method load()
 	
@@ -162,25 +171,41 @@ EndRem
 '			'DebugStop
 			config = ""
 			settings = New JSON()
-			Return
+			'Return
 		End If
-		
+
 		settings = JSON.parse( config )
 		If settings.isInvalid()
 			Print( "Failed to load settings: "+settings.error() )
 			settings = New JSON()
 		End If
+		
+		'DebugStop
+		' Defaults
+		If Not settings.search( "blitzmax.path" );    settings.set( "blitzmax.path" , DEFAULT_BLITZMAX_PATH )
+		If Not settings.search( "certificate.path" ); settings.set( "certificate.path" , DEFAULT_CERTIFICATE_PATH )
+		If Not settings.search( "certificate.name" ); settings.set( "certificate.name", DEFAULT_CERTIFICATE_NAME )
 
 		' Defaults
 		'tmp = settings[ "blitzmax.path" ]
 		'If tmp <> ""; SYS.BLITZMAX_PATH = tmp
-		'tmp = settings[ "certificate.name" ]
+		'tmp = settings[ "certificate.path" ]
 		'If tmp <> ""; SYS.CERTIFICATE = tmp
+		
+		'DebugStop
+		'For Local key:String = EachIn settings.keys()
+		'	Local value:String = settings[ key ]
+		'	Print( key + " == " + value )
+		'Next
+		'DebugStop
 		
 	End Method
 	
 	Method save()
-		DebugStop
+		'DebugStop
+		Local folder:String = ExtractDir( filename )
+		If FileType( folder ) <> FILETYPE_DIR; MakeDirectory( folder )
+		'
 		If FileType( filename ) = FILETYPE_DIR; Return
 		Local config:String = settings.prettify()
 		SaveString( config, filename )

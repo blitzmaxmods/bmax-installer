@@ -48,15 +48,19 @@ Rem
 	Next
 EndRem	
 
-
-
 Function show_modservers()
 	'DebugStop
-	
+	If AppArgs.Length<>3; die( "Invalid command" )
 	Local table:String[][] '=[[]]
-	'Local width:Int[] = []
 	table :+ [[ "NAME", "REPOSITORY" ]]
-	For Local key:String = EachIn SYS.DB.get( "modservers" ).keys()
+	
+	Local list:JSON = SYS.DB.get( "modservers" )
+	If Not list Or list.isinvalid()
+		Print( "No modservers are defined" )
+		Return
+	End If
+	
+	For Local key:String = EachIn list.keys()
 		
 		Local J:JSON = SYS.DB.get( "modservers|"+key )
 		
@@ -72,10 +76,17 @@ Function show_modservers()
 End Function
 
 Function show_packages( filter:String="" )
+	If AppArgs.Length<>3; die( "Invalid command" )
 	Local table:String[][] '=[[]]
-	'Local width:Int[] = []
 	table :+ [[ "PACKAGE", "TYPE", "VER", "REPOSITORY" ]]
-	For Local key:String = EachIn SYS.DB.get( "packages" ).keys()
+	
+	Local list:JSON = SYS.DB.get( "packages" )
+	If Not list Or list.isinvalid()
+		Print( "No packages are defined" )
+		Return
+	End If
+	
+	For Local key:String = EachIn list.keys()
 		
 		Local J:JSON = SYS.DB.get( "packages|"+key )
 		
@@ -95,14 +106,61 @@ Function show_packages( filter:String="" )
 End Function
 
 Function show_repos()
+	If AppArgs.Length<>3; die( "Invalid command" )
 	Local table:String[][] '=[[]]
-	'Local width:Int[] = []
 	table :+ [[ "REPOSITORY" ]]
-	For Local key:String = EachIn SYS.DB.get( "repositories" ).keys()
+	
+	Local list:JSON = SYS.DB.get( "repositories" )
+	If Not list Or list.isinvalid()
+		Print( "No repositories are defined" )
+		Return
+	End If
+	
+	For Local key:String = EachIn list.keys()
 		
 		Local line:String[]  = [key]
 		table :+ [line]
 		
 	Next
 	showtable( table, True )
+End Function
+
+' Show a single variable
+Function cmd_show_variable( args:String[] )
+	Print( "ARGS: "+args.Length )
+	'Local table:String[][] '=[[]]
+	'
+	If args.Length <> 1; die( "Invalid request" )
+	'
+	Local key:String = Lower( args[0] )
+	Local value:String = SYS.Config[ key ]
+	If Not key; die( "Unknown variable: "+key )
+	'
+	Local line:String[] = [ key, "= "+value ]
+	'table :+ [line]
+	showtable( [line], False, 1 )
+End Function
+
+' Show all variables
+Function cmd_show_variables( args:String[] )
+	Print( "ARGS: "+args.Length )
+	Local table:String[][] '=[[]]
+	'
+	If args.Length > 0; die( "Invalid request" )
+	
+	' All variables
+	For Local key:String = EachIn SYS.Config.settings.keys()
+		Local value:String = SYS.Config[ key ]
+		'
+		Local line:String[] = [ key, "= "+value ]
+		table :+ [line]
+
+	Next
+	'Print table.Length
+	If table.Length = 0
+		Print( "No variables are defined" )
+		Return
+	End If
+	'
+	showtable( table, False, 1 )
 End Function

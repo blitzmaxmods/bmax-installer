@@ -2,7 +2,8 @@
 
 *EXPERIMENTAL*
 
-CURRENT STATE:  BROKEN
+* CURRENT STATE:  BROKEN
+* VERSION: 0.0.5
 
 # Command Line
 
@@ -12,6 +13,8 @@ NOTE: This should be based on something like "apt"
 bmax version                        IMPLEMENTED     Application version
 
 bmax add modserver <modserver>      IMPLEMENTED     Manually add a new modserver
+
+bmax clear <variable>               IMPLEMENTED     Clears a variable (See "bmax set" for details)
 
 bmax remove modserver <modserver>   IMPLEMENTED     Manually remove a modserver
 bmax remove package <package>       TBC             Manually remove a package
@@ -35,6 +38,13 @@ bmax list <options>                 TBC             List modules and/ packages
         -modules   | -m
         -packages  | -p
 
+bmax set <variable>=<value>         IMPLEMENTED     Update configuration
+    Supported variables:
+        blitzmax.path                               Where Blitzmax is installed (Default is "<HOMEPATH>/BlitzMax/")
+        certificate.name                            Certificate name (Default is "cacert.pem")
+        certificate.path                            Path where certificate can be found (Default is "<APPPATH>/certificate/")
+    All other values will be ignored
+
 bmax show modservers                IMPLEMENTED     Show list of modservers
 bmax show modules                   IMPLEMENTED     Show list of modules
 bmax show packages                  IMPLEMENTED     Show list of packages
@@ -44,6 +54,9 @@ bmax show <package>                 TBC             Show details of a package
     Package:
         blitzmax                    TBC             Show details of package Blitzmax 
         <module>                    TBC             Show details of a module
+
+bmax show var|variable <variable>   IMPLEMENTED     Show value of given variable
+bmax show vars|variables            IMPLEMENTED     Show value of all variable
 
 bmax --debug        Produce a CSV containing all module data
 
